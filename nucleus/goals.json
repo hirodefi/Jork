@@ -1,0 +1,31 @@
+{
+  "goals": [
+    {
+      "id": "g1",
+      "title": "Get oriented",
+      "description": "Understand who I am, verify my Solana tools work, be ready to build",
+      "status": "pending",
+      "priority": 1,
+      "steps": [
+        {
+          "id": "g1s1",
+          "description": "Read SELF.md and SOLANA.md, understand my purpose and knowledge",
+          "status": "pending",
+          "attempts": 0
+        },
+        {
+          "id": "g1s2",
+          "description": "Check if solana CLI and anchor are installed and working",
+          "status": "pending",
+          "attempts": 0
+        },
+        {
+          "id": "g1s3",
+          "description": "Verify cluster config and test a devnet airdrop if on devnet",
+          "status": "pending",
+          "attempts": 0
+        }
+      ]
+    }
+  ]
+}

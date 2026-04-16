@@ -1,0 +1,12 @@
+node_modules/
+.env
+workspace/
+*.log
+*.jsonl
+jork.pulse
+jork.thread
+jork.offset
+media/
+powers/solana/wallets/
+outbox.jsonl
+package-lock.json

@@ -1,0 +1,21 @@
+{
+  "name": "jork",
+  "version": "2.0.0",
+  "description": "Jork - Solana's Autonomous Build Engine",
+  "main": "src/jork.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "start": "node src/jork.js",
+    "install-pm2": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop jork",
+    "logs": "pm2 logs jork"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "dotenv": "^16.0.0",
+    "openai": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
