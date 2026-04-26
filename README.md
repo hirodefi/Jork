@@ -191,6 +191,10 @@ pm2 start ecosystem.config.js     # run with PM2 (recommended)
 pm2 logs jork                     # view logs
 ```
 
+## Community
+
+117 stars and growing. If Jork helps you ship something, drop a star and share what you built.
+
 ## License
 
 MIT
