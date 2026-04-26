@@ -718,7 +718,6 @@ async function handleBuild(text, from, imagePath) {
             return;
         }
         remember("jork", plan);
-        recordIntent(plan);
         log("-> [plan] " + plan.slice(0, 80));
         jorkSend(plan);
 
@@ -731,8 +730,7 @@ async function handleBuild(text, from, imagePath) {
                     { tools: false }
                 );
                 askThinking = stripThinking(askThinking);
-                if (askThinking && !isDuplicateIntent(askThinking)) {
-                    recordIntent(askThinking);
+                if (askThinking) {
                     jorkSend(askThinking, true);
                 }
             } catch(e) {
