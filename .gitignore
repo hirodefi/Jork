@@ -10,3 +10,4 @@ media/
 powers/solana/wallets/
 outbox.jsonl
 package-lock.json
+.claude/settings.local.json

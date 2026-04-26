@@ -169,6 +169,22 @@ function extractCofounderInfo(text) {
 
     var nameMatch = text.match(/(?:i'm|i am|call me|my name is)\s+([A-Z][a-z]+)/i);
     if (nameMatch) saveCofounderField('Name', nameMatch[1]);
+
+    // Free-text notes: capture personal preferences that regex fields can't
+    var personalKeywords = /\b(prefer|always|never|hate|love|usually|my workflow|can't stand|big fan|i tend to|my style)\b/i;
+    if (personalKeywords.test(text)) {
+        try {
+            var cfPath = cfg.COFOUNDER();
+            var cfContent = fs.readFileSync(cfPath, 'utf8');
+            if (cfContent.indexOf('## Notes') === -1) {
+                cfContent += '\n\n## Notes\n';
+            }
+            var noteLine = '- [' + new Date().toISOString().slice(0, 10) + '] ' + text.slice(0, 200).replace(/\n/g, ' ');
+            cfContent = cfContent.replace(/\n*$/, '\n') + noteLine + '\n';
+            fs.writeFileSync(cfPath, cfContent);
+            _cache["cofounder"] = null;
+        } catch(e) {}
+    }
 }
 
 function loadSnapshot() {
