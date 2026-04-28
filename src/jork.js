@@ -795,39 +795,11 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
     var heartbeatCount = 0;
     var heartbeatTimer = setInterval(function() {
         heartbeatCount++;
-        if (!workCancelled) {
-            var heartbeatMsg = "step " + stepNum + "/" + totalSteps + ": " + stepDesc.slice(0, 50);
-            jorkSend(heartbeatMsg, true);
-        }
+        // No TG messages from heartbeat — just track internally
     }, 120000); // Every 120 seconds
 
     try {
-        // Streaming: pipe live bash output to Telegram, rate-limited
-        var lastStreamTime = 0;
-        var streamBuffer = '';
-        var onStream = null;
-
-        if (showThinking) {
-            onStream = function(chunk) {
-                streamBuffer += chunk;
-                var now = Date.now();
-                if (now - lastStreamTime >= 8000 && streamBuffer.trim()) {
-                    var lines = streamBuffer.trim().split('\n');
-                    var preview = lines.slice(-3).join(' | ').slice(0, 120);
-                    if (preview) jorkSend('> ' + preview, true);
-                    streamBuffer = '';
-                    lastStreamTime = now;
-                }
-            };
-        }
-
-        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 12, noResume: true, onStream: onStream });
-        // Flush any remaining stream buffer
-        if (streamBuffer && streamBuffer.trim()) {
-            var finalPreview = streamBuffer.trim().split('\n').slice(-2).join(' | ').slice(0, 120);
-            if (finalPreview) jorkSend('> ' + finalPreview, true);
-            streamBuffer = '';
-        }
+        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 12, noResume: true });
         return stripThinking(result);
     } finally {
         clearInterval(heartbeatTimer);
@@ -871,48 +843,11 @@ function verifyStep(stepDesc, result) {
     return { ok: true };
 }
 
-// Group steps that can run in parallel.
-// Steps are independent if they target different areas (frontend vs program vs config).
+// Group steps for execution.
+// Always sequential — parallel execution causes race conditions
+// (steps sharing workspace files, port conflicts, CWD confusion).
 function groupParallelSteps(steps) {
-    if (steps.length <= 1) return [steps];
-
-    var groups = [];
-    var currentGroup = [0]; // first step always starts alone
-
-    for (var i = 1; i < steps.length; i++) {
-        var prevLower = steps[i - 1].toLowerCase();
-        var currLower = steps[i].toLowerCase();
-
-        // Detect if steps share a focus area (dependent)
-        var areas = {
-            frontend: ['frontend', 'react', 'next', 'vue', 'svelte', 'ui', 'component', 'page', 'html', 'css', 'vite', 'web'],
-            program: ['program', 'anchor', 'rust', 'solana', 'smart contract', 'instruction', 'account', 'lib.rs'],
-            install: ['install', 'dependency', 'package', 'npm', 'cargo', 'setup', 'scaffold', 'init'],
-            deploy: ['deploy', 'build', 'compile', 'publish', 'test', 'verify'],
-        };
-
-        function getArea(text) {
-            for (var area in areas) {
-                for (var k = 0; k < areas[area].length; k++) {
-                    if (text.indexOf(areas[area][k]) !== -1) return area;
-                }
-            }
-            return 'general';
-        }
-
-        var prevArea = getArea(prevLower);
-        var currArea = getArea(currLower);
-
-        // Can parallelize if different non-deploy areas and group isn't too big
-        if (prevArea !== currArea && currArea !== 'deploy' && prevArea !== 'deploy' && currentGroup.length < 2) {
-            currentGroup.push(i);
-        } else {
-            groups.push(currentGroup);
-            currentGroup = [i];
-        }
-    }
-    groups.push(currentGroup);
-    return groups;
+    return steps.map(function(s, i) { return [i]; });
 }
 
 // Execute a single step with verification and one retry
@@ -979,18 +914,8 @@ async function executeBuild(ctx, from, text, plan) {
     // Progress update timer (every 120 seconds)
     var lastStepProgress = 0;
     progressTimer = setInterval(function() {
-        if (working && !workCancelled && steps && steps.length > 0) {
-            var built = checkWorkspace();
-            var shortDesc = lastStepProgress > 0 && steps[lastStepProgress - 1]
-                ? steps[lastStepProgress - 1].slice(0, 60)
-                : workDescription.slice(0, 50);
-            var progressMsg = "on step " + lastStepProgress + "/" + steps.length + ": " + shortDesc;
-            if (built) progressMsg += " | workspace: " + built.slice(0, 80);
-            jorkSend(progressMsg, true);
-        } else if (!working) {
-            // Build finished, clear this timer
-            clearInterval(progressTimer);
-        }
+        // Internal tracking only — no TG messages from progress timer
+        if (!working) { clearInterval(progressTimer); }
     }, 120000);
 
     log("Parsed " + steps.length + " steps from plan");
@@ -1009,16 +934,14 @@ async function executeBuild(ctx, from, text, plan) {
         var group = stepGroups[g];
         var isParallel = group.length > 1;
 
-        if (isParallel && showThinking) {
-            jorkSend("Running steps " + group.map(function(idx) { return idx + 1; }).join(' + ') + " in parallel", true);
-        }
+        // Parallel disabled — always sequential
 
         // Execute group (parallel or sequential)
         var groupPromises = [];
         for (var gi = 0; gi < group.length; gi++) {
             var stepIdx = group[gi];
             var stepNum = stepIdx + 1;
-            var stepDesc = steps[stepIdx];
+            var stepDesc = steps[stepIdx] || "(unknown step)";
             lastStepProgress = stepNum;
 
             log("=== Step " + stepNum + "/" + steps.length + ": " + stepDesc.slice(0, 60) + (isParallel ? " [parallel]" : "") + " ===");
