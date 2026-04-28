@@ -774,10 +774,12 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
         "THIS STEP: " + stepDesc + "\n\n" +
         "Execute ONLY this step. Do not do other steps.\n" +
         "Actually run commands, write files, install things. Do NOT just describe.\n" +
-        "IMPORTANT npm rules:\n" +
-        "- Always use --legacy-peer-deps when installing packages alongside existing ones (e.g. Solana packages with a Vite project)\n" +
+        "IMPORTANT npm rules (CRITICAL - follow exactly):\n" +
+        "- FIRST: Create .npmrc with 'legacy-peer-deps=true' in the project root BEFORE running any npm install\n" +
+        "- Always use --legacy-peer-deps when installing packages alongside existing ones\n" +
         "- Never install ALL wallet adapters. Only install what you need (e.g. @solana/wallet-adapter-phantom instead of @solana/wallet-adapter-wallets)\n" +
-        "- If npm install removes a dev dependency (like vite), do NOT rm -rf node_modules. Just install the missing package separately.\n" +
+        "- If npm install removes a dev dependency (like vite), do NOT rm -rf node_modules. Run: npm install <missing-pkg> --legacy-peer-deps\n" +
+        "- NEVER run rm -rf node_modules. It destroys the project. Always fix with targeted installs.\n" +
         "- If a command fails twice with the same error, try a DIFFERENT approach instead of repeating.\n" +
         "When this step is done, respond with ONE sentence confirming what you did.\n" +
         "If this step fails, explain what went wrong in one sentence.";

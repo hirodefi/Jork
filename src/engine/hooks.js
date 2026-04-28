@@ -59,6 +59,12 @@ addPreHook(function(toolName, params) {
         return { block: true, reason: 'rm -rf outside Jork root blocked' };
     }
 
+    // Block rm -rf node_modules — this destroys the project and forces a full
+    // reinstall which triggers the vite peer-dep loop. Targeted installs instead.
+    if (/rm\s+-[rRf]+\s+.*node_modules/.test(cmd)) {
+        return { block: true, reason: 'rm -rf node_modules blocked — use npm install <pkg> --legacy-peer-deps instead' };
+    }
+
     // Block credential exposure via common readers.
     if (/\b(?:cat|less|more|head|tail|bat|view|type)\s+[^|&;]*\.(env|pem|key|keypair|secret)\b/i.test(cmd)) {
         return { block: true, reason: 'potential credential exposure blocked' };

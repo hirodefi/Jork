@@ -95,6 +95,18 @@ async function bashTool(params) {
     var cwd = params.cwd || process.cwd();
     var onChunk = params.onChunk || null;
 
+    // Auto-create .npmrc with legacy-peer-deps before npm install/create
+    // This prevents npm from removing dev dependencies (like vite) when
+    // installing packages with conflicting peer deps (like Solana adapters).
+    if (/npm\s+(i|install|ci|create)/.test(command)) {
+        var npmrcPath = path.join(cwd, '.npmrc');
+        try {
+            if (!fs.existsSync(npmrcPath)) {
+                fs.writeFileSync(npmrcPath, 'legacy-peer-deps=true\n');
+            }
+        } catch(e) { /* cwd may not exist yet, that's ok */ }
+    }
+
     var result = await spawnCommand(command, {
         timeout: timeout,
         cwd: cwd,
