@@ -41,14 +41,16 @@ function stripThinking(text) {
 function filterRoboticPatterns(text) {
     if (!text) return text;
 
-    // Remove numbered lists at start
-    text = text.replace(/^\d+\.\s+/gm, '');
+    // Only remove robotic confirmation openers when they're the ENTIRE first line
+    // (e.g. "Understood. " or "Got it. " prefixing actual content)
+    var firstLine = text.split('\n')[0];
+    var openerRe = /^(Understood|Got it|OK|Sure|Alright|Bet)[.,]?\s+/i;
+    if (openerRe.test(firstLine) && firstLine.length > 20) {
+        text = text.replace(openerRe, '');
+    }
 
-    // Remove common confirmation fluff
-    text = text.replace(/^(Understood|Got it|OK|Sure|Alright|Bet)[.,]?\s*/i, '');
-
-    // Replace all newlines with single space
-    text = text.replace(/\n+/g, ' ');
+    // Collapse excessive newlines (3+) to 2, but preserve normal paragraph breaks
+    text = text.replace(/\n{3,}/g, '\n\n');
 
     return text.trim();
 }
@@ -62,9 +64,8 @@ function jorkSend(text, skipFilter) {
         text = filterRoboticPatterns(text);
     }
 
-    // Skip empty or meaningless responses
-    if (!text || text.length < 3) return;
-    if (/^(ok|yes|sure|got it|understood|alright|bet)[.!?]?$/i.test(text)) return;
+    // Skip empty responses
+    if (!text || text.length < 2) return;
 
     // Check for duplicate intent
     if (isDuplicateIntent(text)) {
@@ -781,10 +782,10 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
     var heartbeatTimer = setInterval(function() {
         heartbeatCount++;
         if (!workCancelled) {
-            var heartbeatMsg = "still on step " + stepNum + "/" + totalSteps + " (" + heartbeatCount * 90 + "s)";
+            var heartbeatMsg = "step " + stepNum + "/" + totalSteps + ": " + stepDesc.slice(0, 50);
             jorkSend(heartbeatMsg, true);
         }
-    }, 90000); // Every 90 seconds
+    }, 120000); // Every 120 seconds
 
     try {
         // Streaming: pipe live bash output to Telegram, rate-limited
@@ -943,17 +944,22 @@ async function executeBuild(ctx, from, text, plan) {
     // Typing indicator
     workTimer = setInterval(function() { tg.typing(); }, 30000);
 
-    // Progress update timer (every 60 seconds)
+    // Progress update timer (every 120 seconds)
     var lastStepProgress = 0;
     progressTimer = setInterval(function() {
         if (working && !workCancelled) {
-            var progressMsg = "still working on " + workDescription.slice(0, 50) + " (step " + lastStepProgress + ")";
+            var built = checkWorkspace();
+            var shortDesc = steps.length > 0 && lastStepProgress > 0
+                ? steps[lastStepProgress - 1].slice(0, 60)
+                : workDescription.slice(0, 50);
+            var progressMsg = "on step " + lastStepProgress + "/" + steps.length + ": " + shortDesc;
+            if (built) progressMsg += " | workspace: " + built.slice(0, 80);
             jorkSend(progressMsg, true);
         } else if (!working) {
             // Build finished, clear this timer
             clearInterval(progressTimer);
         }
-    }, 60000);
+    }, 120000);
 
     var steps = parsePlanSteps(plan);
     if (steps.length === 0) {

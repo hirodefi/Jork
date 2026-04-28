@@ -38,7 +38,7 @@ module.exports = {
     // Provider-specific defaults (only used when LLM_MODEL is not set)
     ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
     ZAI_BASE_URL: 'https://api.z.ai/api/anthropic',
-    ZAI_MODEL: process.env.ZAI_MODEL || 'glm-4.7',
+    ZAI_MODEL: process.env.ZAI_MODEL || 'glm-5.1',
     OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o',
     GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
 

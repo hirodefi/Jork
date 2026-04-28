@@ -159,7 +159,7 @@ function invokeOpenAI(systemPrompt, userPrompt, opts) {
         client.chat.completions.create({
             model: model,
             messages: messages,
-            max_tokens: 2000
+            max_tokens: 4096
         }).then(function(res) {
             resolve(res.choices[0].message.content || null);
         }).catch(function(e) {
@@ -187,7 +187,7 @@ function invokeAnthropic(systemPrompt, userPrompt, opts) {
 
         client.messages.create({
             model: cfg.LLM_MODEL || cfg.ANTHROPIC_MODEL,
-            max_tokens: 2000,
+            max_tokens: 4096,
             system: systemPrompt,
             messages: [{ role: 'user', content: content }]
         }).then(function(res) {
@@ -219,7 +219,7 @@ function invokeZai(systemPrompt, userPrompt, opts) {
 
         client.messages.create({
             model: cfg.LLM_MODEL || cfg.ZAI_MODEL,
-            max_tokens: 2000,
+            max_tokens: 4096,
             system: systemPrompt,
             messages: [{ role: 'user', content: content }]
         }).then(function(res) {
