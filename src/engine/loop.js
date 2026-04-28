@@ -199,10 +199,14 @@ async function execute(opts) {
                 isError: String(result).indexOf('Error:') === 0,
             });
 
-            // Loop detection: track consecutive failures with similar patterns
-            if (String(result).indexOf('Error:') === 0 || /Exit code [1-9]/.test(String(result))) {
-                recentFailures.push(call.name + ':' + (call.arguments.command || '').slice(0, 50));
-                if (recentFailures.length >= 5) {
+            // Loop detection: track consecutive failures or repeated actions
+            var resultStr = String(result);
+            var isFailure = resultStr.indexOf('Error:') === 0 || /Exit code [1-9]/.test(resultStr);
+            var cmdKey = call.name + ':' + (call.arguments.command || call.arguments.file_path || '').replace(/node_modules\/[^/]*\//g, '*/').slice(0, 60);
+
+            if (isFailure) {
+                recentFailures.push(cmdKey);
+                if (recentFailures.length >= 4) {
                     // Check if same tool+pattern repeated 3+ times
                     var last3 = recentFailures.slice(-3);
                     if (last3[0] === last3[1] && last3[1] === last3[2]) {
@@ -214,7 +218,23 @@ async function execute(opts) {
                     }
                 }
             } else {
-                recentFailures = []; // Reset on success
+                // Also detect repeated successful commands (checking same file over and over)
+                recentFailures.push('OK:' + cmdKey);
+                if (recentFailures.length >= 8) {
+                    var last5 = recentFailures.slice(-5);
+                    var allSameTarget = last5.every(function(f) {
+                        return f.replace(/OK:/,'') === last5[0].replace(/OK:/,'');
+                    });
+                    if (allSameTarget) {
+                        console.log('[loop-detector] Repeated same action 5x, breaking: ' + last5[0]);
+                        var repMsg = 'Repeatedly checking the same thing. Breaking out.';
+                        onText(repMsg);
+                        finalText = finalText || repMsg;
+                        break;
+                    }
+                }
+                // Clear failure counter on success (but keep pattern tracking)
+                if (recentFailures.length > 15) recentFailures = recentFailures.slice(-10);
             }
 
             // Check for halt between tool calls

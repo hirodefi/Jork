@@ -98,11 +98,12 @@ async function bashTool(params) {
     // Auto-create .npmrc with legacy-peer-deps before npm install/create
     // This prevents npm from removing dev dependencies (like vite) when
     // installing packages with conflicting peer deps (like Solana adapters).
+    // Also sets omit= to override any global npm config that drops devDeps.
     if (/npm\s+(i|install|ci|create)/.test(command)) {
         var npmrcPath = path.join(cwd, '.npmrc');
         try {
             if (!fs.existsSync(npmrcPath)) {
-                fs.writeFileSync(npmrcPath, 'legacy-peer-deps=true\n');
+                fs.writeFileSync(npmrcPath, 'legacy-peer-deps=true\nomit=\n');
             }
         } catch(e) { /* cwd may not exist yet, that's ok */ }
     }

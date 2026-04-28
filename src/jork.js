@@ -688,19 +688,20 @@ async function handleBuild(text, from, imagePath) {
     var planPrompt = ctx + "\n" + from + " asked: " + text + "\n\n" +
         "Create a build plan. Output:\n" +
         "1. ONE sentence acknowledging what you will build (warm, direct)\n" +
-        "2. Then a numbered plan of 3-6 concrete steps in plain English\n\n" +
+        "2. Then a numbered plan of 2-4 concrete steps in plain English\n\n" +
         "RULES:\n" +
         "- You have NOT built anything yet. This is a plan.\n" +
         "- NEVER include URLs, results, or code. Just steps.\n" +
         "- Use EXACTLY what the user specified (frameworks, RPCs, networks).\n" +
-        "- Each step should be one clear action.\n" +
+        "- Each step should be one clear action that can be done in 5-8 tool calls.\n" +
+        "- Combine related work into one step. Fewer steps is better.\n" +
+        "- Do NOT add infrastructure steps (nginx, SSL, DNS). Only build what was asked.\n" +
+        "- Do NOT add a separate 'verify' or 'test' step. Verify within the build step.\n" +
         "- Example:\n" +
-        "  Building a React wallet viewer on mainnet, deploying to Vercel.\n" +
-        "  1. Scaffold React app with Vite\n" +
-        "  2. Install Solana wallet adapter and web3.js\n" +
-        "  3. Write wallet connection and balance display components\n" +
-        "  4. Build and test locally\n" +
-        "  5. Deploy to Vercel with your token";
+        "  Building a React wallet viewer on mainnet, running on port 4588.\n" +
+        "  1. Scaffold React Vite app and install Solana wallet adapter + web3.js\n" +
+        "  2. Write wallet connection UI and transaction history component\n" +
+        "  3. Start dev server on port 4588 and verify it works";
 
     var opts = { tools: false };
     if (imagePath) {
@@ -774,13 +775,15 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
         "THIS STEP: " + stepDesc + "\n\n" +
         "Execute ONLY this step. Do not do other steps.\n" +
         "Actually run commands, write files, install things. Do NOT just describe.\n" +
-        "IMPORTANT npm rules (CRITICAL - follow exactly):\n" +
-        "- FIRST: Create .npmrc with 'legacy-peer-deps=true' in the project root BEFORE running any npm install\n" +
-        "- Always use --legacy-peer-deps when installing packages alongside existing ones\n" +
-        "- Never install ALL wallet adapters. Only install what you need (e.g. @solana/wallet-adapter-phantom instead of @solana/wallet-adapter-wallets)\n" +
-        "- If npm install removes a dev dependency (like vite), do NOT rm -rf node_modules. Run: npm install <missing-pkg> --legacy-peer-deps\n" +
-        "- NEVER run rm -rf node_modules. It destroys the project. Always fix with targeted installs.\n" +
-        "- If a command fails twice with the same error, try a DIFFERENT approach instead of repeating.\n" +
+        "IMPORTANT constraints:\n" +
+        "- Be efficient. Use the fewest tool calls possible. Do NOT explore or diagnose — just do the work.\n" +
+        "- Do NOT set up nginx, SSL, reverse proxies, or DNS. Only what was asked.\n" +
+        "- Do NOT read files you don't need to edit. Do NOT check if packages exist if you're about to install them.\n" +
+        "IMPORTANT npm rules (CRITICAL):\n" +
+        "- The project .npmrc with legacy-peer-deps=true is auto-created. Do NOT create it manually.\n" +
+        "- Use --legacy-peer-deps when installing packages alongside existing ones.\n" +
+        "- NEVER run rm -rf node_modules. If a package is missing, install it with --legacy-peer-deps.\n" +
+        "- If a command fails twice, stop and report the error. Do NOT try a third time.\n" +
         "When this step is done, respond with ONE sentence confirming what you did.\n" +
         "If this step fails, explain what went wrong in one sentence.";
 
@@ -814,7 +817,7 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
             };
         }
 
-        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 30, noResume: true, onStream: onStream });
+        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 12, noResume: true, onStream: onStream });
         // Flush any remaining stream buffer
         if (streamBuffer && streamBuffer.trim()) {
             var finalPreview = streamBuffer.trim().split('\n').slice(-2).join(' | ').slice(0, 120);
@@ -851,6 +854,14 @@ function verifyStep(stepDesc, result) {
             if (/fixed|resolved|worked around|alternative|success|installed|done/i.test(result)) continue;
             return { ok: false, reason: lastLines.slice(0, 200) };
         }
+    }
+
+    // Check if result is just exploration/diagnosis with no actual work done
+    var shortResult = result.toLowerCase();
+    var hasDoneWork = /wrote|written|created|edited|installed|removed|started|running|built|deployed|npm create|npm install/i.test(shortResult);
+    if (!hasDoneWork && result.length < 100) {
+        // Very short result with no action verbs — likely just analysis
+        return { ok: false, reason: "Step produced no actionable output: " + result.slice(0, 100) };
     }
 
     return { ok: true };
