@@ -774,6 +774,11 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
         "THIS STEP: " + stepDesc + "\n\n" +
         "Execute ONLY this step. Do not do other steps.\n" +
         "Actually run commands, write files, install things. Do NOT just describe.\n" +
+        "IMPORTANT npm rules:\n" +
+        "- Always use --legacy-peer-deps when installing packages alongside existing ones (e.g. Solana packages with a Vite project)\n" +
+        "- Never install ALL wallet adapters. Only install what you need (e.g. @solana/wallet-adapter-phantom instead of @solana/wallet-adapter-wallets)\n" +
+        "- If npm install removes a dev dependency (like vite), do NOT rm -rf node_modules. Just install the missing package separately.\n" +
+        "- If a command fails twice with the same error, try a DIFFERENT approach instead of repeating.\n" +
         "When this step is done, respond with ONE sentence confirming what you did.\n" +
         "If this step fails, explain what went wrong in one sentence.";
 
@@ -824,8 +829,8 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
 function verifyStep(stepDesc, result) {
     if (!result) return { ok: false, reason: "Step returned no response (timeout or error)" };
 
-    // Hard failure patterns in last 5 lines only
-    var lastLines = result.trim().split('\n').slice(-5).join('\n');
+    // Check for failure patterns — scan more broadly, not just last 5 lines
+    var lastLines = result.trim().split('\n').slice(-8).join('\n');
     var fatalPatterns = [
         /^error:/im,
         /command not found/i,
@@ -833,12 +838,15 @@ function verifyStep(stepDesc, result) {
         /permission denied/i,
         /fatal error/i,
         /Error: Reached max turns/,
+        /failed to load config/i,
+        /cannot find module/i,
+        /npm error ERESOLVE/i,
     ];
     for (var p = 0; p < fatalPatterns.length; p++) {
         var match = lastLines.match(fatalPatterns[p]);
         if (match) {
-            // Check if it was actually resolved
-            if (/fixed|resolved|worked around|alternative/i.test(result)) continue;
+            // Check if it was actually resolved in subsequent output
+            if (/fixed|resolved|worked around|alternative|success|installed|done/i.test(result)) continue;
             return { ok: false, reason: lastLines.slice(0, 200) };
         }
     }

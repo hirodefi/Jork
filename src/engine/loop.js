@@ -120,6 +120,7 @@ async function execute(opts) {
 
     var finalText = '';
     var totalToolCalls = 0;
+    var recentFailures = []; // Track consecutive failures for loop detection
 
     for (var turn = 0; turn < maxTurns; turn++) {
         // Call the LLM
@@ -197,6 +198,24 @@ async function execute(opts) {
                 content: String(result),
                 isError: String(result).indexOf('Error:') === 0,
             });
+
+            // Loop detection: track consecutive failures with similar patterns
+            if (String(result).indexOf('Error:') === 0 || /Exit code [1-9]/.test(String(result))) {
+                recentFailures.push(call.name + ':' + (call.arguments.command || '').slice(0, 50));
+                if (recentFailures.length >= 5) {
+                    // Check if same tool+pattern repeated 3+ times
+                    var last3 = recentFailures.slice(-3);
+                    if (last3[0] === last3[1] && last3[1] === last3[2]) {
+                        console.log('[loop-detector] Same tool failing 3x in a row, breaking loop: ' + last3[0]);
+                        var loopMsg = 'Stuck in a loop trying: ' + last3[0] + '. Breaking out to reassess.';
+                        onText(loopMsg);
+                        finalText = finalText || loopMsg;
+                        break;
+                    }
+                }
+            } else {
+                recentFailures = []; // Reset on success
+            }
 
             // Check for halt between tool calls
             if (haltPending) {
