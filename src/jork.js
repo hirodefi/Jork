@@ -779,8 +779,12 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
         "- Be efficient. Use the fewest tool calls possible. Do NOT explore or diagnose — just do the work.\n" +
         "- Do NOT set up nginx, SSL, reverse proxies, or DNS. Only what was asked.\n" +
         "- Do NOT read files you don't need to edit. Do NOT check if packages exist if you're about to install them.\n" +
+        "- When scaffolding with Vite, keep the ORIGINAL vite.config.js and only add server port config.\n" +
+        "  Do NOT overwrite vite.config.js with a different version of @vitejs/plugin-react.\n" +
+        "- After npm create vite, run 'npm install' in the new project BEFORE changing any files.\n" +
+        "- Verify vite is installed by running 'npx vite --version' before starting the dev server.\n" +
         "IMPORTANT npm rules (CRITICAL):\n" +
-        "- The project .npmrc with legacy-peer-deps=true is auto-created. Do NOT create it manually.\n" +
+        "- The project .npmrc with legacy-peer-deps=true and include=dev is auto-created. Do NOT create it manually.\n" +
         "- Use --legacy-peer-deps when installing packages alongside existing ones.\n" +
         "- NEVER run rm -rf node_modules. If a package is missing, install it with --legacy-peer-deps.\n" +
         "- If a command fails twice, stop and report the error. Do NOT try a third time.\n" +
@@ -962,15 +966,22 @@ async function executeBuild(ctx, from, text, plan) {
         totalSteps: parsePlanSteps(plan).length || 1,
     });
 
+    // Parse steps FIRST before setting up timers that reference them
+    var steps = parsePlanSteps(plan);
+    if (steps.length === 0) {
+        // Fallback: couldn't parse plan, treat entire plan as one step
+        steps = ["Execute the full build: " + text.slice(0, 200)];
+    }
+
     // Typing indicator
     workTimer = setInterval(function() { tg.typing(); }, 30000);
 
     // Progress update timer (every 120 seconds)
     var lastStepProgress = 0;
     progressTimer = setInterval(function() {
-        if (working && !workCancelled) {
+        if (working && !workCancelled && steps && steps.length > 0) {
             var built = checkWorkspace();
-            var shortDesc = steps.length > 0 && lastStepProgress > 0
+            var shortDesc = lastStepProgress > 0 && steps[lastStepProgress - 1]
                 ? steps[lastStepProgress - 1].slice(0, 60)
                 : workDescription.slice(0, 50);
             var progressMsg = "on step " + lastStepProgress + "/" + steps.length + ": " + shortDesc;
@@ -981,12 +992,6 @@ async function executeBuild(ctx, from, text, plan) {
             clearInterval(progressTimer);
         }
     }, 120000);
-
-    var steps = parsePlanSteps(plan);
-    if (steps.length === 0) {
-        // Fallback: couldn't parse plan, treat entire plan as one step
-        steps = ["Execute the full build: " + text.slice(0, 200)];
-    }
 
     log("Parsed " + steps.length + " steps from plan");
     var completedSteps = [];

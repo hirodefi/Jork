@@ -95,17 +95,19 @@ async function bashTool(params) {
     var cwd = params.cwd || process.cwd();
     var onChunk = params.onChunk || null;
 
-    // Auto-create .npmrc with legacy-peer-deps before npm install/create
-    // This prevents npm from removing dev dependencies (like vite) when
-    // installing packages with conflicting peer deps (like Solana adapters).
-    // Also sets omit= to override any global npm config that drops devDeps.
+    // Auto-create .npmrc in the PROJECT directory before npm install/create.
+    // npm 10.x defaults to omit=dev which skips devDependencies (vite, etc).
+    // We must create .npmrc NEXT TO the package.json, not in the workspace root.
     if (/npm\s+(i|install|ci|create)/.test(command)) {
-        var npmrcPath = path.join(cwd, '.npmrc');
+        // Find the actual target directory from the command (e.g. "cd foo && npm install")
+        var cdMatch = command.match(/cd\s+([^\s&;|]+)/);
+        var targetDir = cdMatch ? cdMatch[1] : cwd;
+        var npmrcPath = path.join(targetDir, '.npmrc');
         try {
             if (!fs.existsSync(npmrcPath)) {
-                fs.writeFileSync(npmrcPath, 'legacy-peer-deps=true\nomit=\n');
+                fs.writeFileSync(npmrcPath, 'legacy-peer-deps=true\ninclude=dev\n');
             }
-        } catch(e) { /* cwd may not exist yet, that's ok */ }
+        } catch(e) { /* dir may not exist yet, that's ok */ }
     }
 
     var result = await spawnCommand(command, {
