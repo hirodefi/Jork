@@ -289,19 +289,14 @@ function invoke(prompt, opts) {
     var provider = cfg.LLM_PROVIDER;
     var needsTools = opts && opts.tools;
 
-    // Work mode: use Jork's own engine (no CLI dependency)
-    if (needsTools) {
-        return invokeEngine(prompt, opts);
+    // claude-cli: always use the CLI binary (handles OAuth auth natively, no API key needed)
+    if (provider === 'claude-cli') {
+        return invokeClaude(prompt, opts);
     }
 
-    // Chat mode: use API directly for speed
-    if (provider === 'claude-cli') {
-        // For claude-cli without tools, use Anthropic API directly if we have a key
-        if (cfg.LLM_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) {
-            var systemPrompt = opts.system || 'You are ' + cfg.JORK_NAME + ', an autonomous Solana builder.';
-            return invokeAnthropic(systemPrompt, prompt, opts);
-        }
-        return invokeClaude(prompt, opts);
+    // Work mode: use Jork's own engine (direct API providers)
+    if (needsTools) {
+        return invokeEngine(prompt, opts);
     }
 
     var systemPrompt = opts.system || 'You are ' + cfg.JORK_NAME + ', an autonomous Solana builder.';
