@@ -696,12 +696,20 @@ async function handleBuild(text, from, imagePath) {
         "- Each step should be one clear action that can be done in 5-8 tool calls.\n" +
         "- Combine related work into one step. Fewer steps is better.\n" +
         "- Do NOT add infrastructure steps (nginx, SSL, DNS). Only build what was asked.\n" +
-        "- Do NOT add a separate 'verify' or 'test' step. Verify within the build step.\n" +
+        "- Do NOT add a separate 'verify' or 'test' step. Verify within the final build step.\n" +
+        "- The final step must include automated verification appropriate for what is being built.\n" +
+        "  You cannot open a browser or use a GUI. Choose the right check for the task type:\n" +
+        "  frontend app → build it (npm run build / cargo build / etc) then start server and curl the port\n" +
+        "  backend API → start it and curl an endpoint with real test data\n" +
+        "  CLI / script → run it with sample input and check output\n" +
+        "  smart contract → compile and run the test suite\n" +
+        "  mobile bundle → run the bundle/export command and verify the artifact exists\n" +
+        "  anything else → think about what evidence of success exists and produce it programmatically\n" +
         "- Example:\n" +
         "  Building a React wallet viewer on mainnet, running on port 4588.\n" +
         "  1. Scaffold React Vite app and install Solana wallet adapter + web3.js\n" +
-        "  2. Write wallet connection UI and transaction history component\n" +
-        "  3. Start dev server on port 4588 and verify it works";
+        "  2. Write wallet connection UI and token balance component\n" +
+        "  3. Run npm run build to verify compilation, then start dev server and curl port 4588 to confirm it serves";
 
     var opts = { tools: false };
     if (imagePath) {
@@ -723,25 +731,9 @@ async function handleBuild(text, from, imagePath) {
         log("-> [plan] " + plan.slice(0, 80));
         jorkSend(plan);
 
-        // If first build, ask thinking preference
-        if (!thinkingAsked) {
-            pendingConfirm = { plan: plan, from: from, text: text, ctx: ctx };
-            try {
-                var askThinking = await llm.invoke(
-                    "You are " + cfg.JORK_NAME + ". You just shared a build plan. Ask in ONE casual sentence if they want to see your progress or just the result.",
-                    { tools: false }
-                );
-                askThinking = stripThinking(askThinking);
-                if (askThinking) {
-                    jorkSend(askThinking, true);
-                }
-            } catch(e) {
-                jorkSend("Want to see my progress as I build, or just the final result?", true);
-            }
-            return; // Wait for answer
-        }
-
-        // Thinking already known, start immediately
+        // Just start — no need to ask about progress preferences
+        thinkingAsked = true;
+        showThinking = true; // natural brief updates during build
         executeBuild(ctx, from, text, plan);
 
     } catch(e) {
@@ -782,13 +774,23 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
         "- When scaffolding with Vite, keep the ORIGINAL vite.config.js and only add server port config.\n" +
         "  Do NOT overwrite vite.config.js with a different version of @vitejs/plugin-react.\n" +
         "- After npm create vite, run 'npm install' in the new project BEFORE changing any files.\n" +
-        "- Verify vite is installed by running 'npx vite --version' before starting the dev server.\n" +
         "IMPORTANT npm rules (CRITICAL):\n" +
         "- The project .npmrc with legacy-peer-deps=true and include=dev is auto-created. Do NOT create it manually.\n" +
         "- Use --legacy-peer-deps when installing packages alongside existing ones.\n" +
         "- NEVER run rm -rf node_modules. If a package is missing, install it with --legacy-peer-deps.\n" +
         "- If a command fails twice, stop and report the error. Do NOT try a third time.\n" +
-        "When this step is done, respond with ONE sentence confirming what you did.\n" +
+        "VERIFICATION (if this is the final step):\n" +
+        "- You cannot open a browser or interact with any GUI. Do NOT attempt to view results visually.\n" +
+        "- Decide the right automated verification for what you just built and execute it:\n" +
+        "  frontend app → run the build command (e.g. npm run build), then start the dev server in background,\n" +
+        "                  curl the port to confirm HTTP 200, then kill the server\n" +
+        "  backend API → start the server, curl an endpoint with real test input, check the response\n" +
+        "  CLI / script → run it with sample arguments and verify the output is correct\n" +
+        "  smart contract → run the test suite (anchor test / cargo test / hardhat test)\n" +
+        "  mobile bundle → run the export/bundle command and check the artifact exists and has size > 0\n" +
+        "  other → think: what is the simplest command that proves this works? run it.\n" +
+        "- Report what verification you ran and what the result was.\n" +
+        "When this step is done, respond with ONE sentence confirming what you did and what the verification showed.\n" +
         "If this step fails, explain what went wrong in one sentence.";
 
     // Start heartbeat for this step
@@ -799,7 +801,7 @@ async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
     }, 120000); // Every 120 seconds
 
     try {
-        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 12, noResume: true });
+        var result = await llm.invoke(stepPrompt, { tools: true, maxTurns: 30, noResume: true });
         return stripThinking(result);
     } finally {
         clearInterval(heartbeatTimer);
@@ -865,7 +867,7 @@ async function executeStepAndVerify(stepDesc, stepNum, totalSteps, stepCtx, full
     if (!verification.ok) {
         log("Step " + stepNum + " FAILED: " + verification.reason);
         log("Retrying step " + stepNum + "...");
-        if (showThinking) jorkSend("Step " + stepNum + " hit an issue. Retrying...", true);
+        if (showThinking) jorkSend("hit a snag, trying a different approach...", true);
 
         try {
             var retryCtx = stepCtx + "\nPrevious attempt at this step failed: " + verification.reason + "\n";
@@ -877,7 +879,7 @@ async function executeStepAndVerify(stepDesc, stepNum, totalSteps, stepCtx, full
 
         if (!verification.ok) {
             log("Step " + stepNum + " FAILED after retry: " + verification.reason);
-            jorkSend("Stuck on step " + stepNum + " (" + stepDesc + "): " + verification.reason.slice(0, 150) + "\nWhat should I do?", true);
+            jorkSend("ran into a wall with: " + stepDesc.slice(0, 80) + "\n" + verification.reason.slice(0, 150) + "\nwhat do you want me to do?", true);
             return { ok: false, result: result || '', failed: true };
         }
     }
@@ -947,7 +949,14 @@ async function executeBuild(ctx, from, text, plan) {
             log("=== Step " + stepNum + "/" + steps.length + ": " + stepDesc.slice(0, 60) + (isParallel ? " [parallel]" : "") + " ===");
 
             if (showThinking) {
-                jorkSend("Step " + stepNum + "/" + steps.length + ": " + stepDesc, true);
+                // Brief natural progress, not a formatted status line
+                var progressPhrases = [
+                    "on it.",
+                    "working...",
+                    "going...",
+                    stepDesc.length < 60 ? stepDesc.toLowerCase() + "..." : stepDesc.slice(0, 55).toLowerCase() + "...",
+                ];
+                jorkSend(progressPhrases[stepNum % progressPhrases.length], true);
             }
 
             // Refresh context for this step
