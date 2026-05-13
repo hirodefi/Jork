@@ -687,13 +687,13 @@ async function handleBuild(text, from, imagePath) {
     // Step 1: Create plan
     var planPrompt = ctx + "\n" + from + " asked: " + text + "\n\n" +
         "Create a build plan. Output:\n" +
-        "1. ONE sentence acknowledging what you will build (warm, direct)\n" +
-        "2. Then a numbered plan of 2-4 concrete steps in plain English\n\n" +
+        "1. ONE sentence saying what you're about to build — speak as yourself, not as a template. No \"Building a...\" opener, just say it naturally.\n" +
+        "2. Then a numbered list of 2-4 concrete steps in plain English\n\n" +
         "RULES:\n" +
         "- You have NOT built anything yet. This is a plan.\n" +
         "- NEVER include URLs, results, or code. Just steps.\n" +
         "- Use EXACTLY what the user specified (frameworks, RPCs, networks).\n" +
-        "- Each step should be one clear action that can be done in 5-8 tool calls.\n" +
+        "- Each step should be one clear action.\n" +
         "- Combine related work into one step. Fewer steps is better.\n" +
         "- Do NOT add infrastructure steps (nginx, SSL, DNS). Only build what was asked.\n" +
         "- Do NOT add a separate 'verify' or 'test' step. Verify within the final build step.\n" +
@@ -834,11 +834,14 @@ function verifyStep(stepDesc, result) {
         }
     }
 
+    // Explicit success signals — short confident results that confirm things worked
+    var successSignals = /http 200|exit code 0|build.*clean|compiled successfully|tests? passed|serving|curl.*200|200 ok|bundle.*kb|dist\/|artifact exists|works|done\.|complete\.|finished\.|verified\.|confirmed\./i;
+    if (successSignals.test(result)) return { ok: true };
+
     // Check if result is just exploration/diagnosis with no actual work done
     var shortResult = result.toLowerCase();
-    var hasDoneWork = /wrote|written|created|edited|installed|removed|started|running|built|deployed|npm create|npm install/i.test(shortResult);
-    if (!hasDoneWork && result.length < 100) {
-        // Very short result with no action verbs — likely just analysis
+    var hasDoneWork = /wrote|written|created|edited|installed|removed|started|running|built|deployed|scaffolded|generated|compiled|bundled|curled|fetched/i.test(shortResult);
+    if (!hasDoneWork && result.length < 80) {
         return { ok: false, reason: "Step produced no actionable output: " + result.slice(0, 100) };
     }
 
@@ -948,15 +951,14 @@ async function executeBuild(ctx, from, text, plan) {
 
             log("=== Step " + stepNum + "/" + steps.length + ": " + stepDesc.slice(0, 60) + (isParallel ? " [parallel]" : "") + " ===");
 
-            if (showThinking) {
-                // Brief natural progress, not a formatted status line
-                var progressPhrases = [
-                    "on it.",
-                    "working...",
-                    "going...",
-                    stepDesc.length < 60 ? stepDesc.toLowerCase() + "..." : stepDesc.slice(0, 55).toLowerCase() + "...",
+            if (showThinking && stepNum > 1) {
+                // Only send progress after step 1 (step 1 starts immediately after plan)
+                // Varied, non-repeating, non-robotic
+                var progressPool = [
+                    "still going...", "deep in it.", "making progress.", "almost there.",
+                    "this part takes a sec.", "nearly done.", "pushing through."
                 ];
-                jorkSend(progressPhrases[stepNum % progressPhrases.length], true);
+                jorkSend(progressPool[(stepNum - 1) % progressPool.length], true);
             }
 
             // Refresh context for this step
