@@ -190,7 +190,7 @@ function extractCofounderInfo(text) {
 
 function loadSnapshot() {
     var s = cachedRead("snapshot", cfg.SNAPSHOT);
-    return s.slice(0, 800);
+    return s.slice(0, 1500);
 }
 
 function loadActiveGoal() {
@@ -765,7 +765,7 @@ function parsePlanSteps(plan) {
     return steps;
 }
 
-// Execute a single step with scoped Claude CLI call
+// Execute a single build step
 async function executeStep(stepDesc, stepNum, totalSteps, ctx, fullRequest) {
     var built = checkWorkspace();
     var stepPrompt = ctx + "\n" +

@@ -105,13 +105,14 @@ function installPowers() {
 }
 
 function startJork() {
-    // Check Claude CLI
-    try {
-        execSync('claude --version', { stdio: 'ignore' });
-        console.log('  Claude CLI found.');
-    } catch(e) {
-        console.log('  IMPORTANT: Claude Code CLI needed for build execution.');
-        console.log('  Install: https://claude.ai/code then run: claude login');
+    // Check CLI if provider is claude-cli
+    if (process.env.LLM_PROVIDER === 'claude-cli') {
+        try {
+            execSync('claude --version', { stdio: 'ignore' });
+            console.log('  Anthropic CLI found.');
+        } catch(e) {
+            console.log('  Warning: Anthropic CLI not found. Ensure it is installed and logged in.');
+        }
     }
 
     console.log('');
@@ -192,8 +193,8 @@ async function interactive() {
     // LLM
     console.log('');
     console.log('  STEP 2 - AI Provider');
-    console.log('  [1] Claude Code CLI  (free with Claude subscription, full tool use)');
-    console.log('  [2] Claude API       (https://console.anthropic.com)');
+    console.log('  [1] Anthropic CLI    (requires local CLI login, full tool use)');
+    console.log('  [2] Anthropic API    (https://console.anthropic.com)');
     console.log('  [3] GLM              (https://z.ai)');
     console.log('  [4] OpenAI           (https://platform.openai.com)');
     console.log('  [5] Gemini           (https://aistudio.google.com)');
@@ -206,9 +207,9 @@ async function interactive() {
     } else {
         try {
             execSync('claude --version', { stdio: 'ignore' });
-            console.log('  Claude CLI found.');
+            console.log('  Anthropic CLI found.');
         } catch(e) {
-            console.log('  Claude CLI not found. Install: https://claude.ai/code');
+            console.log('  Anthropic CLI not found. Ensure it is installed and logged in.');
         }
     }
 

@@ -71,7 +71,7 @@ Pick one:
 
 | Provider | How to get | Notes |
 |----------|-----------|-------|
-| Claude API | https://console.anthropic.com | Anthropic's API with tool use |
+| Anthropic | https://console.anthropic.com | Full tool use support |
 | GLM (Z.AI) | https://z.ai | Zhipu AI, Anthropic-compatible, tool use supported |
 | OpenAI | https://platform.openai.com | GPT-4o and compatible |
 | Gemini | https://aistudio.google.com | Google AI |

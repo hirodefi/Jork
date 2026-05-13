@@ -2,7 +2,7 @@
 const { spawn } = require('child_process');
 const cfg = require('./config');
 
-// ---- Claude CLI bridge ----
+// ---- CLI bridge ----
 
 var _workCallCount = 0;
 var SESSION_RESET_EVERY = 20; // start fresh session every 20 work calls
@@ -21,7 +21,7 @@ function resetSession() {
     _workCallCount = 0;
 }
 
-// Build env vars for Claude CLI based on LLM provider
+// Build env vars for the CLI bridge based on LLM provider
 function buildClaudeEnv() {
     var env = Object.assign({}, process.env);
     delete env.CLAUDECODE;
@@ -232,8 +232,6 @@ function invokeZai(systemPrompt, userPrompt, opts) {
 }
 
 // ---- Unified invoke ----
-// Work mode (tools: true) always goes through Claude CLI for real execution.
-// Chat mode (tools: false) uses API directly for speed, or Claude CLI if that's the provider.
 
 // ---- Jork Engine (provider-independent tool execution) ----
 

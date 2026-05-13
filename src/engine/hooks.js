@@ -2,7 +2,6 @@
 
 // Jork Execution Engine - Pre/Post Tool Hooks
 // Intercept tool calls for validation, safety, and logging.
-// Inspired by Claude Code's hookify system.
 //
 // The workspace path is read from ../config at invocation time so the same
 // code works for any install location (user's machine, server, CI). It is

@@ -2,7 +2,7 @@
 
 // Jork Execution Engine
 // Provider-independent. No CLI dependency.
-// Drop-in replacement for Claude CLI tool execution.
+// Provider-independent agentic execution engine.
 
 var { execute, chat } = require('./loop');
 var { TOOLS } = require('./tools');
