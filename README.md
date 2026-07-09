@@ -1,200 +1,144 @@
 # Jork
 
-Solana's Autonomous Build Engine.
+**Autonomous AI framework for anyone with an idea.**
 
-Jork makes building on Solana as simple as sending a message.  Anyone with an idea can become a builder overnight - no deep technical skills needed. Just describe what you want, by text or voice on Telegram, and Jork handles the rest: scaffolding, coding, testing, deploying. More builders means more apps, more consumers, and faster growth for the Solana ecosystem.
+Jork removes the barrier between having an idea and building something real. No coding skills. No team. No heavy subscriptions. Just a text message.
 
-## What she does
+You describe what you want. Jork handles the rest — research, outreach, operations, development, deployment. Continuously. Autonomously. Around the clock.
 
-Build anything on Solana. Tokens, NFTs, DeFi protocols, full-stack dapps, games, DAOs, Blinks, marketplaces - literally anything. Simple or complex. Your imagination is the limit.
+---
 
-- Shows you a plan before building, then executes step by step
-- Each step is verified before moving to the next
-- Understands voice messages and images
-- Learns about you over time (deployment preferences, frameworks, workflow)
-- Remembers every conversation with intelligent recall
-- Works with any AI provider - no vendor lock-in
+## What Jork Does
 
-## Requirements
+Jork is not a chatbot or a code generator. It is an autonomous operating system for ideas.
 
-- Node.js 18+
-- A Telegram account
-- One of: Anthropic API key, Z.AI/GLM key, OpenAI key, or Gemini key
+Tell Jork what you are building. It assembles the right agents, sets them to work, and manages the entire operation — without you needing to manage it. Each agent handles a specific function: research, communication, content, development, quality, monitoring. They run in parallel, coordinate with each other, and report back to you.
 
-## Install
+The result is a working, operating business function — not a draft, not a suggestion, not a plan. Something actually running.
 
-### One-liner (replace with your actual keys)
+---
 
-```bash
-git clone https://github.com/hirodefi/Jork && cd Jork && npm install && npm run setup TELEGRAM_ID BOT_TOKEN AI_PROVIDER API_KEY
+## Live Proof
+
+Jork is not theoretical. A live instance is running at **[jork.online](https://jork.online)**, powering the entire marketing and client acquisition operation of [Startup Fortune](https://startupfortune.com) — a Google News-verified UK publication.
+
+That instance:
+- Scans 12 platforms continuously for potential clients
+- Researches and scores each prospect
+- Writes personalised outreach for each contact
+- Sends messages across email, LinkedIn, Instagram, and other channels
+- Reads replies, interprets intent, responds appropriately
+- Manages the full conversation from first contact to conversion
+
+**Results in the first 16 days of commercial operation: 15 paying clients, £1,400+ in revenue. Zero manual outreach.**
+
+---
+
+## Who It Is For
+
+Anyone with an idea.
+
+- A student who wants to launch something but has no technical background
+- A graduate who wants to build a business but cannot afford a team
+- An entrepreneur who needs their marketing to run while they focus on building
+- A founder who wants to scale operations without scaling headcount
+
+If you have an idea and a phone, Jork is for you.
+
+---
+
+## How It Works
+
+Jork runs on Telegram. You text it — or voice message it — and it goes to work.
+
+```
+You: I want to find clients for my design studio. Target early-stage startups.
+
+Jork: On it. I'll scan Product Hunt, LinkedIn, and press wires for companies 
+      that launched in the last 30 days, score them for fit, and start outreach 
+      today. I'll keep you posted on replies.
 ```
 
-| Parameter | What it is | How to get it |
-|-----------|-----------|---------------|
-| `TELEGRAM_ID` | Your numeric Telegram user ID | Message @userinfobot on Telegram |
-| `BOT_TOKEN` | Your Telegram bot token | Message @BotFather, send /newbot |
-| `AI_PROVIDER` | `anthropic` `glm` `openai` `gemini` | Pick one |
-| `API_KEY` | Your provider's API key | See provider links below |
+No setup wizard. No configuration forms. No technical knowledge required. A conversation is enough to start.
 
-Or run interactive setup (step-by-step prompts):
+---
+
+## Architecture
+
+Jork is built on a provider-independent agentic engine with a modular powers system.
+
+```
+src/
+  jork.js          — Core router, handlers, agent pipeline
+  engine/
+    loop.js        — Agentic tool-use loop (provider-independent)
+    tools.js       — Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+    providers.js   — Anthropic, GLM, OpenAI, Gemini adapters
+    session.js     — Conversation state and memory management
+    index.js       — Engine entry point
+  llm.js           — LLM abstraction (5 providers, zero lock-in)
+  config.js        — Paths and configuration
+  telegram.js      — Telegram interface (text, voice, image)
+
+nucleus/
+  SELF.md          — Jork's identity and operating principles
+  SNAPSHOT.md      — Current state and active context
+  goals.json       — Active goals with progress tracking
+
+Powers (modular capability system):
+  memory           — Persistent recall across all conversations
+  web2             — Server operations, nginx, SSL, SSH, PM2, deployment
+  voice            — Whisper-based voice transcription
+  image            — Vision input processing
+```
+
+### Key Design Principles
+
+**Provider independence** — Jork works with Anthropic, GLM, OpenAI, or Gemini. Switch providers without changing anything else.
+
+**Modular powers** — Capabilities are installed as self-contained modules. Add a new power and every Jork instance gains the capability immediately.
+
+**Autonomous operation** — Jork does not wait to be asked. It runs continuously, checks in when needed, and handles the loop from task to completion without hand-holding.
+
+**Accessible by design** — The interface is Telegram. The access point is a text message. No app store. No account dashboard. No configuration required.
+
+---
+
+## Install
 
 ```bash
 git clone https://github.com/hirodefi/Jork && cd Jork && npm install && npm run setup
 ```
 
-## Before you run setup
+**Requirements:**
+- Node.js 18+
+- A Telegram account and bot token ([@BotFather](https://t.me/BotFather))
+- One AI provider key: Anthropic, GLM, OpenAI, or Gemini
 
-You need three things ready.
+**Setup will ask for:**
 
-### 1. Your Telegram user ID
+| Parameter | What it is |
+|-----------|------------|
+| `TELEGRAM_ID` | Your numeric Telegram user ID — message [@userinfobot](https://t.me/userinfobot) |
+| `BOT_TOKEN` | Your Telegram bot token from @BotFather |
+| `AI_PROVIDER` | `anthropic` / `glm` / `openai` / `gemini` |
+| `API_KEY` | Your chosen provider's API key |
 
-Your personal numeric ID - not your username, not a bot. Just a number like `123713022`.
+---
 
-- Open Telegram and message **@userinfobot**
-- It replies with your ID instantly
-- Copy that number - you will paste it into setup
+## Roadmap
 
-### 2. A Telegram bot token
+- **Hosted platform** — No self-hosting required. Text a number, get a running Jork instance.
+- **Phone-first onboarding** — Start with a text message, no signup, no app download
+- **Expanded powers** — More platform integrations, more autonomous capabilities
+- **University and accelerator access** — Making Jork available to students and early-stage founders across the UK
 
-Jork needs her own bot to talk through.
+---
 
-- Open Telegram and message **@BotFather**
-- Send `/newbot`
-- Pick a name (e.g. "Jork") and a username (e.g. `myjorkbot`)
-- BotFather gives you a token that looks like `1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ`
-- Copy that token - you will paste it into setup
-- Then open your new bot in Telegram and press Start (so it can message you)
+## Built by
 
-### 3. An AI provider
+[hirodefi](https://github.com/hirodefi) — builder, writer, founder of [Startup Fortune](https://startupfortune.com)
 
-Pick one:
+---
 
-| Provider | How to get | Notes |
-|----------|-----------|-------|
-| Anthropic | https://console.anthropic.com | Full tool use support |
-| GLM (Z.AI) | https://z.ai | Zhipu AI, Anthropic-compatible, tool use supported |
-| OpenAI | https://platform.openai.com | GPT-4o and compatible |
-| Gemini | https://aistudio.google.com | Google AI |
-
-## Architecture
-
-```
-src/
-  jork.js           - Router, handlers, build pipeline
-  engine/
-    loop.js         - Agentic tool-use loop (provider-independent)
-    tools.js        - 8 tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
-    providers.js    - Anthropic/Z.AI + OpenAI/Gemini adapters
-    session.js      - Conversation state management
-  llm.js            - LLM abstraction (4 providers)
-  telegram.js       - Telegram interface (text, voice, images)
-  config.js         - Configuration and paths
-```
-
-Jork's knowledge lives in her nucleus:
-
-```
-nucleus/
-  SELF.md           - Who she is. Evolves over time.
-  SOLANA.md         - Solana knowledge brain. Section-indexed, self-updating.
-  COFOUNDER.md      - Co-founder profile. Learns about you over time.
-  SNAPSHOT.md       - Current project state
-  goals.json        - Active goals with steps
-```
-
-### Execution Engine
-
-Jork has her own execution engine (src/engine/). No external CLI dependency. The engine:
-
-1. Sends prompts + tool definitions to any LLM API
-2. When the LLM requests tool calls, executes them locally (bash, file ops, web)
-3. Sends results back, loops until done
-
-Works with any provider that supports tool calling: Anthropic, Z.AI/GLM, OpenAI, Gemini.
-
-### Message Router
-
-Messages are classified before processing:
-
-- **Commands** (stop, cancel, status, show/hide thinking) - instant, no LLM call
-- **Chat** - lightweight context (~3KB), natural response
-- **Build** - full context (~15KB), structured plan + step-by-step execution
-
-SOLANA.md is loaded by section (keyword-indexed), not dumped entirely. Chat about tokens loads the "SPL Tokens" section, not all 440 lines.
-
-### Build Pipeline
-
-When you ask Jork to build something:
-
-1. She creates a plan (3-6 steps, plain English) and shows it to you
-2. Each step runs as a separate, focused execution (30 turns max per step)
-3. Each step is verified before moving to the next
-4. Failed steps retry once with error context, then surface as a blocker
-5. Final result includes only verified URLs
-
-## Powers
-
-5 powers ship by default. All installed automatically on setup.
-
-| Power | What it does |
-|-------|-------------|
-| memory | Conversation recall with keyword indexing, concept classification, synonym expansion, and recency-weighted search |
-| solana | Full toolchain: scaffold, build, test, deploy, wallet, tokens, tx-history, account-info, diagnose (30+ errors), deploy-verify |
-| web2 | Server setup: nginx (proxy, SPA, API+frontend), SSL, SSH, Vercel/SSH deploy, PM2, MongoDB, deploy checklist, firewall |
-| voice | Transcribe voice messages using Whisper tiny with Solana term correction |
-| image | Read and analyze images via AI vision |
-
-### Extended powers
-
-More powers at https://github.com/hirodefi/Jork-Powers:
-
-| Power | What it does |
-|-------|-------------|
-| research | Deep web research: DuckDuckGo, Brave, Wikipedia, HackerNews, arXiv, GitHub |
-| news | Real-time news from RSS feeds (crypto, tech, general) |
-| reddit | Search and read Reddit without API key |
-| x-search | Search X/Twitter via Nitter |
-| earn | ClawTasks bounties, Reddit pain mining, digital product strategies |
-| private-ip | Tor IP rotation for anonymous requests |
-
-## Usage
-
-Once running, message Jork on Telegram. Text or voice.
-
-### Built-in commands
-
-| Say | What it does |
-|-----|-------------|
-| `show thinking` | Show Jork's progress as she builds (hidden by default) |
-| `hide thinking` | Hide progress, show only final result |
-| `stop` / `cancel` | Stop the current build task |
-| `status` | Check what Jork is working on (instant, no LLM) |
-
-### How Jork works
-
-When you give Jork a build task, she shows you a plan first. Once confirmed, she executes each step, verifies it worked, and moves to the next. You can message her anytime during the build. New build requests get queued. Chat and questions get a reply right away.
-
-- "Build me a full DEX with liquidity pools and a swap UI"
-- "Create a token-gated membership platform with governance voting"
-- "I want an NFT collection with a minting page, 10k supply, reveal mechanic"
-- "Build a lending protocol with collateral, interest rates, and liquidation"
-- "Set up a React frontend with wallet connect, deploy it to Vercel"
-- "Create a Solana program that escrows SOL between two parties"
-- Send a voice message describing what you want to build
-- Send a screenshot of an error, a UI mockup, or architecture diagram
-
-## Running
-
-```bash
-npm start                          # run directly
-pm2 start ecosystem.config.js     # run with PM2 (recommended)
-pm2 logs jork                     # view logs
-```
-
-## Community
-
-117 stars and growing. If Jork helps you ship something, drop a star and share what you built.
-
-## License
-
-MIT
+*Jork is open source. The hosted platform is coming.*
