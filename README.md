@@ -1,36 +1,24 @@
 # Jork
 
-**Autonomous AI framework for anyone with an idea.**
+**Autonomous AI agent for anyone with an idea.**
 
 Jork removes the barrier between having an idea and building something real. No coding skills. No team. No heavy subscriptions. Just a text message.
 
-You describe what you want. Jork handles the rest — research, outreach, operations, development, deployment. Continuously. Autonomously. Around the clock.
+You describe what you want. Jork builds it, end to end, on its own.
 
 ---
 
 ## What Jork Does
 
-Jork is not a chatbot or a code generator. It is an autonomous operating system for ideas.
+Jork can build things. Applications, tools, programs, whatever you describe, it writes the code, tests it, and ships it, without you needing to know how any of that works.
 
-Tell Jork what you are building. It assembles the right agents, sets them to work, and manages the entire operation — without you needing to manage it. Each agent handles a specific function: research, communication, content, development, quality, monitoring. They run in parallel, coordinate with each other, and report back to you.
-
-The result is a working, operating business function — not a draft, not a suggestion, not a plan. Something actually running.
+You bring the idea. Jork brings the execution.
 
 ---
 
 ## Live Proof
 
-Jork is not theoretical. A live instance is running at **[jork.online](https://jork.online)**, powering the entire marketing and client acquisition operation of a Google News-verified UK news publication.
-
-That instance:
-- Scans 12 platforms continuously for potential clients
-- Researches and scores each prospect
-- Writes personalised outreach for each contact
-- Sends messages across email, LinkedIn, Instagram, and other channels
-- Reads replies, interprets intent, responds appropriately
-- Manages the full conversation from first contact to conversion
-
-**Results in the first 16 days of commercial operation: 15 paying clients, £1,400+ in revenue. Zero manual outreach.**
+Jork is not theoretical. A live instance has been running in production, building and operating real projects continuously, for weeks at a time, with no manual intervention.
 
 ---
 
@@ -38,10 +26,10 @@ That instance:
 
 Anyone with an idea.
 
-- A student who wants to launch something but has no technical background
-- A graduate who wants to build a business but cannot afford a team
-- An entrepreneur who needs their marketing to run while they focus on building
-- A founder who wants to scale operations without scaling headcount
+- A student who wants to build something but has no technical background
+- A graduate who wants to launch a project but cannot afford a team
+- An entrepreneur who has an idea and nothing else to build it with
+- Anyone who wants to go from idea to working product without learning to code first
 
 If you have an idea and a phone, Jork is for you.
 
@@ -49,14 +37,12 @@ If you have an idea and a phone, Jork is for you.
 
 ## How It Works
 
-Jork runs on Telegram. You text it — or voice message it — and it goes to work.
+Jork runs on Telegram. You text it, or voice message it, and it goes to work.
 
 ```
-You: I want to find clients for my design studio. Target early-stage startups.
+You: I want to build an app that does X.
 
-Jork: On it. I'll scan Product Hunt, LinkedIn, and press wires for companies 
-      that launched in the last 30 days, score them for fit, and start outreach 
-      today. I'll keep you posted on replies.
+Jork: On it. I'll scope it, build it, test it, and let you know when it's ready.
 ```
 
 No setup wizard. No configuration forms. No technical knowledge required. A conversation is enough to start.
@@ -69,7 +55,7 @@ Jork is built on a provider-independent agentic engine with a modular powers sys
 
 ```
 src/
-  jork.js          — Core router, handlers, agent pipeline
+  jork.js          — Core router, handlers, build pipeline
   engine/
     loop.js        — Agentic tool-use loop (provider-independent)
     tools.js       — Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -130,14 +116,14 @@ git clone https://github.com/hirodefi/Jork && cd Jork && npm install && npm run 
 
 - **Hosted platform** — No self-hosting required. Text a number, get a running Jork instance.
 - **Phone-first onboarding** — Start with a text message, no signup, no app download
-- **Expanded powers** — More platform integrations, more autonomous capabilities
-- **University and accelerator access** — Making Jork available to students and early-stage founders across the UK
+- **Expanded powers** — More capabilities, more autonomous reach
+- **Wider access** — Making Jork available to more builders, everywhere
 
 ---
 
 ## Built by
 
-[hirodefi](https://github.com/hirodefi) — builder and writer, working across technology and independent media.
+[hirodefi](https://github.com/hirodefi)
 
 ---
 

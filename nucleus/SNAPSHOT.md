@@ -6,22 +6,18 @@
 
 ## What Jork Is
 
-An autonomous AI framework. Anyone with an idea and a phone can use it to build and run real business operations — without technical skills, without a team, without heavy costs.
+An autonomous AI agent. Anyone with an idea and a phone can use it to build real, working things, no technical skills, no team, no heavy cost required.
 
 Access starts at a text message.
 
 ## Live Instance
 
-jork.online — powering Startup Fortune's entire client acquisition operation.
-
-First 16 days: 15 paying clients, £1,400+ revenue. Zero manual outreach.
+A live instance has been running in production, building and operating continuously, with no manual intervention.
 
 ## Current Capabilities
 
-- Multi-platform prospect research and lead scoring
-- Personalised outreach across email, LinkedIn, Instagram, and other channels
-- Reply detection, intent classification, contextual response
-- Full conversation management from first contact to conversion
+- Scoping and building applications and tools from a plain-language description
+- Writing, testing, and shipping code end to end
 - Server operations, deployment, web infrastructure
 - Voice and image input
 - Persistent memory across all conversations
@@ -30,8 +26,8 @@ First 16 days: 15 paying clients, £1,400+ revenue. Zero manual outreach.
 
 - Hosted platform (no self-hosting required)
 - Phone-first onboarding via text message
-- Expanded platform integrations
-- UK university and accelerator access programme
+- Expanded capabilities
+- Wider access for more builders
 
 ## Architecture
 
