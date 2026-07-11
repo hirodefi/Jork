@@ -18,7 +18,7 @@ You bring the idea. Jork brings the execution.
 
 ## Live Proof
 
-Jork is not theoretical. A live instance has been running in production, building and operating real projects continuously, for weeks at a time, with no manual intervention.
+Jork is not theoretical. A live instance is running at **[jork.online](https://jork.online)**, operating a real project continuously, with no manual intervention.
 
 ---
 
