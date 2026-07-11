@@ -20,7 +20,7 @@ The result is a working, operating business function — not a draft, not a sugg
 
 ## Live Proof
 
-Jork is not theoretical. A live instance is running at **[jork.online](https://jork.online)**, powering the entire marketing and client acquisition operation of [Startup Fortune](https://startupfortune.com) — a Google News-verified UK publication.
+Jork is not theoretical. A live instance is running at **[jork.online](https://jork.online)**, powering the entire marketing and client acquisition operation of a Google News-verified UK news publication.
 
 That instance:
 - Scans 12 platforms continuously for potential clients
@@ -137,7 +137,7 @@ git clone https://github.com/hirodefi/Jork && cd Jork && npm install && npm run 
 
 ## Built by
 
-[hirodefi](https://github.com/hirodefi) — builder, writer, founder of [Startup Fortune](https://startupfortune.com)
+[hirodefi](https://github.com/hirodefi) — builder and writer, working across technology and independent media.
 
 ---
 
